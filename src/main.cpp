@@ -19,124 +19,173 @@
 #include "image.hpp"
 #include "j_util.hpp"
 #include "shader.hpp"
+#include "texture.hpp"
 #include "vertex_array.hpp"
 #include "window.hpp"
 
-unsigned int texture_create(const std::string& filePath, const bool isRGBA) {
-    j_assert(filePath.empty() == false, "FilePath missing, cannot init texture");
-    unsigned int textureId;
-    int rbgMode = isRGBA ? GL_RGBA : GL_RGB;
-    glGenTextures(1, &textureId);
-    glBindTexture(GL_TEXTURE_2D, textureId);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    int width, height, nrChannels;
-    unsigned char* data = image_load(filePath.c_str(), &width, &height, &nrChannels);
-    j_assert(data, "Failed to load texture: " + filePath);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, rbgMode, GL_UNSIGNED_BYTE, data);
-    glGenerateMipmap(GL_TEXTURE_2D);
-    image_free_data(data);
-    return textureId;
+static FrameData fps_counter = {};
+glm::vec3 camera_position = glm::vec3(0.0f, 0.0f, 3.0f);
+glm::vec3 camera_front = glm::vec3(0.0f, 0.0f, -1.0f);
+glm::vec3 camera_up = glm::vec3(0.0f, 1.0f, 0.0f);
+bool first_mouse = true;
+float yaw = -90.0f;	
+float pitch = 0.0f;
+float lastX = 800.0f / 2.0;
+float lastY = 600.0 / 2.0;
+float fov = 45.0f;
+
+void window_mouse_callback(GLFWwindow* window, double xposIn, double yposIn) {
+    float xpos = static_cast<float>(xposIn);
+    float ypos = static_cast<float>(yposIn);
+    if (first_mouse) {
+        lastX = xpos;
+        lastY = ypos;
+        first_mouse = false;
+    }
+    float xoffset = xpos - lastX;
+    float yoffset = lastY - ypos;
+    lastX = xpos;
+    lastY = ypos;
+    float sensitivity = 0.1f;
+    xoffset *= sensitivity;
+    yoffset *= sensitivity;
+    yaw += xoffset;
+    pitch += yoffset;
+    if (pitch > 89.0f) {
+        pitch = 89.0f;
+    }
+    if (pitch < -89.0f) {
+        pitch = -89.0f;
+    }
+    float radians_yaw = glm::radians(yaw);
+    float radians_pitch = glm::radians(pitch);
+    float cos_yaw = cos(radians_yaw);
+    float cos_pitch = cos(radians_pitch);
+    float sin_yaw = sin(radians_yaw);
+    float sin_pitch = sin(radians_pitch);
+    glm::vec3 front = glm::vec3(cos_yaw * cos_pitch, sin_pitch, sin_yaw * cos_pitch);
+    camera_front = glm::normalize(front);
 }
 
-void texture_bind(unsigned int textureId) {
-    j_assert(textureId != 0, "Id missing, cannot bind texture");
-    glBindTexture(GL_TEXTURE_2D, textureId);
+void window_handle_input_events(GLFWwindow* window) {
+    glfwPollEvents();
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+        glfwSetWindowShouldClose(window, true);
+    }
+    float cameraSpeed = static_cast<float>(2.5 * fps_counter.deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+        camera_position += cameraSpeed * camera_front;
+    }
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+        camera_position -= cameraSpeed * camera_front;
+    }
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+        camera_position -= glm::normalize(glm::cross(camera_front, camera_up)) * cameraSpeed;
+    }
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+        camera_position += glm::normalize(glm::cross(camera_front, camera_up)) * cameraSpeed;
+    }
 }
-
-// Becnhmark vars
-static float textRenderTime = 0.0f;
-static int currentSecond = 0;
-
-static FreeTypeFont gDebugFTFont = {};
-static FpsCounter fpsCounter = {};
 
 int game_run() {
-    int result;
-    result = glfwInit();
-    j_assert(result == GLFW_TRUE, "glfwInit() failed");
-    GLFWwindow* window = window_create(false);
-    result = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
-    j_assert(result == 1, "Failed to initialize OpenGL context GLAD");
-    glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &result);
-    std::cout << "Using OpenGL " << GLVersion.major << "." << GLVersion.minor << "\n";
-    std::cout << "Maximum nr of vertex attributes supported: " << result << "\n";
-    font_freetype_load("fonts/Roboto-Regular.ttf", &gDebugFTFont);
-    unsigned int texture1 = texture_create("./images/awesomeface.png", true);
-    // indicies of two triangles
-    std::vector<unsigned int> indices { 0, 1, 2, 2, 3, 0 };
-    std::vector<float> vertices {
-        // positions         // texture coords
-        -0.5f,  0.5f, 0.0f,  0.0f, 1.0f, // top left 
-         0.5f,  0.5f, 0.0f,  1.0f, 1.0f, // top right
-         0.5f, -0.5f, 0.0f,  1.0f, 0.0f, // bottom right
-        -0.5f, -0.5f, 0.0f,  0.0f, 0.0f  // bottom left
-    };
-    unsigned int vertexArrayObject = vertex_array_create();
-    vertex_array_bind(vertexArrayObject);
-    buffer_vertex_create(vertices);
-    buffer_index_create(indices);
-    vertex_array_set_attribute_pointer(0, 3, ShaderDataType::Float, false, 5 * sizeof(float), (void*)0);
-    vertex_array_set_attribute_pointer(1, 2,ShaderDataType::Float, false, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-    vertex_array_unbind();
-    unsigned int shader1 = shader_create("./shaders/default_vertex_shader.shader", "./shaders/default_fragment_shader.shader");
-    shader_use(shader1);
-    shader_set_int(shader1, "texture1", 0);
-    shader_use(0);
-    std::string displayTextRender = "";
-    while (!window_set_should_close(window)) {
-        window_handle_input_events(window);
-        window_clear_screen_buffer(0.2f, 0.3f, 0.3f, 1.0f);
-        texture_bind(texture1);
-        shader_use(shader1);
-        glm::mat4 trans; float rotateScale; { // Translations
-            trans = glm::mat4(1.0f);
-            double time = glfwGetTime();
-            rotateScale = (float)time * 40;
-            trans = glm::translate(trans, glm::vec3(0.0f, 0.0f, 0.0f));
-            trans = glm::rotate(trans, glm::radians(rotateScale), glm::vec3(0.0f, 0.0f, 1.0f));
-            trans = glm::scale(trans, glm::vec3(1.0f, 1.0f, 1.0f));
-            shader_set_mat4(shader1, "transform", trans);
-        }
-        glActiveTexture(GL_TEXTURE0);
-        vertex_array_bind(vertexArrayObject);
-        int elementsCount = (int)indices.size();
-        glDrawElements(GL_TRIANGLES, elementsCount, GL_UNSIGNED_INT, 0);
+    GLFWwindow* window;
+    {
+        int result;
+        result = glfwInit();
+        j_assert(result == GLFW_TRUE, "glfwInit() failed");
+        window = window_create(false);
+        result = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
+        glfwSetCursorPosCallback(window, window_mouse_callback);
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        j_assert(result == 1, "Failed to initialize OpenGL context GLAD");
+        glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &result);
+        glEnable(GL_BLEND);
+        glEnable(GL_DEPTH_TEST);
+        std::cout << "Using OpenGL " << GLVersion.major << "." << GLVersion.minor << "\n";
+        std::cout << "Maximum nr of vertex attributes supported: " << result << "\n";
+    }
+    FreeTypeFont font_debug = {};
+    font_freetype_load("fonts/Roboto-Regular.ttf", &font_debug);
+    unsigned int vertex_array;
+    int elements_count;
+    {
+        std::vector<unsigned int> indices;
+        std::vector<float> vertices;
+        indices = { 0, 1, 2, 2, 3, 0 }; // indicies of two triangles
+        elements_count = (int)indices.size();
+        vertices = {
+            // xy          // uv
+            -0.5f,  0.5f,  0.0f, 1.0f, // top left 
+             0.5f,  0.5f,  1.0f, 1.0f, // top right
+             0.5f, -0.5f,  1.0f, 0.0f, // bottom right
+            -0.5f, -0.5f,  0.0f, 0.0f  // bottom left
+        };
+        vertex_array = vertex_array_create();
+        vertex_array_bind(vertex_array);
+        buffer_vertex_create(vertices);
+        buffer_index_create(indices);
+        vertex_array_set_attribute_pointer(0, 2, ShaderDataType::Float, false, 4 * sizeof(float), (void*)0);
+        vertex_array_set_attribute_pointer(1, 2, ShaderDataType::Float, false, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+        vertex_array_unbind();
+    }
+    unsigned int texture_smile;
+    unsigned int shader_default;
+    {
+        texture_smile = texture_create("./images/awesomeface.png", true);
+        shader_default = shader_create("./shaders/default_vertex_shader.shader", "./shaders/default_fragment_shader.shader");
+        shader_use(shader_default);
+        shader_set_int(shader_default, "texture1", 0);
         shader_use(0);
-        std::stringstream stream; std::string displayDebug1; std::string displayCurrent; std::string displayFps; { // Benchmark fps
-            stream << std::fixed << std::setprecision(3) << rotateScale;
-            displayDebug1 = "Rotate scale: " + stream.str();
-            stream.str("");
-            stream << std::fixed << std::setprecision(1) << fpsCounter.currentTime;
-            displayCurrent = "Time: " + stream.str() + "s";
-            stream.str("");
-            stream << std::fixed << std::setprecision(1) << fpsCounter.displayFps;
-            displayFps = "FPS: " + stream.str();
-            if ((int)fpsCounter.currentTime != currentSecond) {
-                currentSecond = (int)fpsCounter.currentTime;
-                stream.str("");
-                stream << std::fixed << std::setprecision(2) << textRenderTime;
-                displayTextRender = "Text render: " + stream.str() + "ms";
-            } 
+    }
+    while (!window_set_should_close(window)) {
+        float rotation_scale;
+        window_handle_input_events(window);
+        window_clear_screen_buffer(0.3f, 0.4f, 0.42f, 1.0f);
+        {
+            shader_use(shader_default);
+            glm::mat4 model; glm::mat4 projection; glm::mat4 view;
+            model = glm::mat4(1.0f);
+            double time = glfwGetTime();
+            rotation_scale = (float)time * 40;
+            model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
+            model = glm::rotate(model, glm::radians(rotation_scale), glm::vec3(0.0f, 0.0f, 1.0f));
+            model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
+            shader_set_mat4(shader_default, "model", model);
+            projection = glm::perspective(glm::radians(fov), (float)4 / (float)3, 0.1f, 100.0f);
+            view = glm::lookAt(camera_position, camera_position + camera_front, camera_up);
+            shader_set_mat4(shader_default, "projection", projection);
+            shader_set_mat4(shader_default, "view", view);
+            texture_bind(texture_smile);
+            glActiveTexture(GL_TEXTURE0);
+            vertex_array_bind(vertex_array);
+            glDrawElements(GL_TRIANGLES, elements_count, GL_UNSIGNED_INT, 0);
+            shader_use(0);
         }
-        font_freetype_render(&gDebugFTFont, displayDebug1, 30.0f, 1160.0f, 1.0f, glm::vec3(0.8, 0.8f, 0.8f));
-        font_freetype_render(&gDebugFTFont, displayFps, 1350.0f, 1160.0f, 1.0f, glm::vec3(0.8, 0.8f, 0.8f));
-        font_freetype_render(&gDebugFTFont, displayCurrent, 1350.0f, 1130.0f, 1.0f, glm::vec3(0.8, 0.8f, 0.8f));
-        font_freetype_render(&gDebugFTFont, displayTextRender, 30.0f, 1130.0f, 1.0f, glm::vec3(0.8, 0.8f, 0.8f));
+        {
+            std::string text_rotation_scale; std::string text_time_elapsed; std::string text_fps;
+            std::stringstream stream;
+            stream << std::fixed << std::setprecision(3) << rotation_scale;
+            text_rotation_scale = "Rotate scale: " + stream.str();
+            stream.str("");
+            stream << std::fixed << std::setprecision(1) << fps_counter.currentTime;
+            text_time_elapsed = "Time: " + stream.str() + "s";
+            stream.str("");
+            stream << std::fixed << std::setprecision(1) << fps_counter.displayFps;
+            text_fps = "FPS: " + stream.str();
+            font_freetype_render(&font_debug, text_rotation_scale, 30.0f, 860.0f, 1.0f, glm::vec3(0.8, 0.8f, 0.8f));
+            font_freetype_render(&font_debug, text_fps, 900.0f, 860.0f, 1.0f, glm::vec3(0.8, 0.8f, 0.8f));
+            font_freetype_render(&font_debug, text_time_elapsed, 900.0f, 830.0f, 1.0f, glm::vec3(0.8, 0.8f, 0.8f));
+        }
         window_swap_screen_buffer(window);
-        fps_frames_increment(&fpsCounter, 1);
-        fps_deltatime_calculate(&fpsCounter);
-        fps_scuffed_calculate(&fpsCounter);
+        fps_frames_increment(&fps_counter, 1);
+        fps_deltatime_calculate(&fps_counter);
+        fps_scuffed_calculate(&fps_counter);
     }
     return 0;
 }
 
 
 int main() {
-    int code = 0;
     std::setlocale(LC_ALL, "utf-8");
-	code = game_run();
-	return code;
+	return game_run();
 }

@@ -44,12 +44,11 @@ void font_freetype_load(const char* fontPath, FreeTypeFont* font) {
             glm::ivec2(ftFace->glyph->bitmap_left, ftFace->glyph->bitmap_top),
             ftFace->glyph->advance.x
         };
-        auto newChar = std::pair<char, FreeTypeCharacter>(c, character);
-        characterArr.insert(newChar);
+        characterArr.insert(std::pair<char, FreeTypeCharacter>(c, character));
     }
     FT_Done_Face(ftFace);
     FT_Done_FreeType(ftLib);
-    glEnable(GL_BLEND);
+
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     unsigned int textVAO, textVBO;
     glGenVertexArrays(1, &textVAO);

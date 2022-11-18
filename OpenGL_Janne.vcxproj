@@ -170,6 +170,7 @@
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\read_file.cpp" />
     <ClCompile Include="src\shader.cpp" />
+    <ClCompile Include="src\texture.cpp" />
     <ClCompile Include="src\vertex_array.cpp" />
     <ClCompile Include="src\window.cpp" />
   </ItemGroup>
@@ -570,6 +571,7 @@
     <ClInclude Include="src\read_file.hpp" />
     <ClInclude Include="src\shader.hpp" />
     <ClInclude Include="src\stb_image.h" />
+    <ClInclude Include="src\texture.hpp" />
     <ClInclude Include="src\vertex_array.hpp" />
     <ClInclude Include="src\window.hpp" />
   </ItemGroup>

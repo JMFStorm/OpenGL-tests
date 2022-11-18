@@ -1,4 +1,4 @@
-struct FpsCounter {
+struct FrameData {
     unsigned long frames;
     unsigned int displayFps;
     float previousCurrentTime;
@@ -8,6 +8,6 @@ struct FpsCounter {
     float overflowedFpsCalcTime;
 };
 
-void fps_frames_increment(FpsCounter* fpsCounter, const unsigned int frames);
-void fps_deltatime_calculate(FpsCounter* fpsCounter);
-void fps_scuffed_calculate(FpsCounter* fpsCounter);
+void fps_frames_increment(FrameData* fpsCounter, const unsigned int frames);
+void fps_deltatime_calculate(FrameData* fpsCounter);
+void fps_scuffed_calculate(FrameData* fpsCounter);

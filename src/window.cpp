@@ -12,9 +12,6 @@ void window_swap_screen_buffer(GLFWwindow* window) {
     glfwSwapBuffers(window);
 }
 
-void window_mouse_callback(GLFWwindow* window, double xposIn, double yposIn) {
-}
-
 void window_scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
 }
 
@@ -45,33 +42,10 @@ GLFWwindow* window_create(const bool fullscreen) {
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwSetErrorCallback(window_error_callback);
     glfwSetFramebufferSizeCallback(window, window_framebuffer_size_callback);
-    glfwSetCursorPosCallback(window, window_mouse_callback);
     glfwSetScrollCallback(window, window_scroll_callback);
-    // tell GLFW to capture our mouse
-    // glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     return window;
 }
 
 bool window_set_should_close(GLFWwindow* window) {
     return glfwWindowShouldClose(window);
 }
-
-void window_handle_input_events(GLFWwindow* window) {
-    glfwPollEvents();
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-        glfwSetWindowShouldClose(window, true);
-    }
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-        // cameraTransform = glm::translate(cameraTransform, glm::vec3(0.0f, -1.0f, 0.0f) * cameraSpeed);
-    }
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-        // cameraTransform = glm::translate(cameraTransform, glm::vec3(0.0f, 1.0f, 0.0f) * cameraSpeed);
-    }
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-        // cameraTransform = glm::translate(cameraTransform, glm::vec3(1.0f, 0.0f, 0.0f) * cameraSpeed);
-    }
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-        // cameraTransform = glm::translate(cameraTransform, glm::vec3(-1.0f, 0.0f, 0.0f) * cameraSpeed);
-    }
-}
-
