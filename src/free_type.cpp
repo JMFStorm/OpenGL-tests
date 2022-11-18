@@ -1,12 +1,12 @@
-#include "freeType.hpp"
+#include "free_type.hpp"
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <iostream>
 #include "main.hpp"
-#include "jUtil.hpp"
+#include "j_util.hpp"
 #include "shader.hpp"
-#include "vertexArray.hpp"
+#include "vertex_array.hpp"
 
 void font_freetype_load(const char* fontPath, FreeTypeFont* font) {
     FT_Library ftLib;
@@ -62,7 +62,7 @@ void font_freetype_load(const char* fontPath, FreeTypeFont* font) {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
     unsigned int textShader = shader_create("./shaders/font_vertex_shader.shader", "./shaders/font_fragment_shader.shader");
-    glm::mat4 projection = glm::ortho(0.0f, (float)WINDOW_WIDTH_DEFAULT, 0.0f, (float)WINDOW_HEIGHT_DEFAULT);
+    glm::mat4 projection = glm::ortho(0.0f, (float)windows_width_default, 0.0f, (float)windows_height_default);
     shader_use(textShader);
     shader_set_mat4(textShader, "projection", projection);
     shader_use(0);

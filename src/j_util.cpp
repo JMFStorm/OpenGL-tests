@@ -1,4 +1,4 @@
-#include "jUtil.hpp"
+#include "j_util.hpp"
 #include <iostream>
 
 void j_assert(bool assertion, std::string errorMessage) {

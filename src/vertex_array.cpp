@@ -1,4 +1,4 @@
-#include "vertexArray.hpp"
+#include "vertex_array.hpp"
 
 unsigned int vertex_array_create() {
     unsigned int vertexArrayObject;

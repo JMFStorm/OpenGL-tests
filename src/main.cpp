@@ -13,45 +13,17 @@
 #include <vector>
 #pragma warning(pop)
 #include "main.hpp"
-#include "freeType.hpp"
+#include "buffer.hpp"
+#include "free_type.hpp"
+#include "fps_counter.hpp"
 #include "image.hpp"
-#include "jUtil.hpp"
+#include "j_util.hpp"
 #include "shader.hpp"
-#include "vertexArray.hpp"
+#include "vertex_array.hpp"
 #include "window.hpp"
 
-unsigned int buffer_vertex_create(const std::vector<float> vertices) {
-    unsigned int vertexBufferObject;
-    glGenBuffers(1, &vertexBufferObject);
-    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
-    int sizeInBytes = (int)vertices.size() * sizeof(unsigned int);
-    glBufferData(GL_ARRAY_BUFFER, sizeInBytes, &vertices[0], GL_STATIC_DRAW);
-    GLint size = 0;
-    glGetBufferParameteriv(GL_ARRAY_BUFFER, GL_BUFFER_SIZE, &size);
-    if (sizeInBytes != size) {
-        glDeleteBuffers(1, &vertexBufferObject);
-        j_assert(sizeInBytes != size, "VertexBufferObject GL_BUFFER_SIZE failed");
-    }
-    return vertexBufferObject;
-}
-
-unsigned int buffer_index_create(const std::vector<unsigned int> indices) {
-    unsigned int indexBufferObject;
-    glGenBuffers(1, &indexBufferObject);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferObject);
-    int sizeInBytes = (int)indices.size() * sizeof(unsigned int);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeInBytes, &indices[0], GL_STATIC_DRAW);
-    GLint size = 0;
-    glGetBufferParameteriv(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_SIZE, &size);
-    if (sizeInBytes != size) {
-        glDeleteBuffers(1, &indexBufferObject);
-        j_assert(sizeInBytes != size, "IndexBufferObject GL_BUFFER_SIZE failed");
-    }
-    return indexBufferObject;
-}
-
 unsigned int texture_create(const std::string& filePath, const bool isRGBA) {
-    j_assert(filePath.empty() == false, "FilePath missing, cannot intit texture ");
+    j_assert(filePath.empty() == false, "FilePath missing, cannot init texture");
     unsigned int textureId;
     int rbgMode = isRGBA ? GL_RGBA : GL_RGB;
     glGenTextures(1, &textureId);
@@ -70,42 +42,8 @@ unsigned int texture_create(const std::string& filePath, const bool isRGBA) {
 }
 
 void texture_bind(unsigned int textureId) {
-    j_assert(textureId != 0, "Id missing, cannot bind texture ");
+    j_assert(textureId != 0, "Id missing, cannot bind texture");
     glBindTexture(GL_TEXTURE_2D, textureId);
-}
-
-struct FpsCounter {
-    unsigned long frames;
-    unsigned int displayFps;
-    float previousCurrentTime;
-    float currentTime;
-    float lastFpsCalcTime;
-    float deltaTime;
-    float overflowedFpsCalcTime;
-};
-
-struct ApplicationState {
-    FpsCounter fpsCounter;
-};
-
-void fps_frames_increment(FpsCounter* fpsCounter, const unsigned int frames) {
-    fpsCounter->frames += frames;
-}
-void fps_deltatime_calculate(FpsCounter* fpsCounter) {
-    fpsCounter->currentTime = (float)glfwGetTime();
-    fpsCounter->deltaTime = fpsCounter->currentTime - fpsCounter->lastFpsCalcTime;
-    fpsCounter->lastFpsCalcTime = fpsCounter->currentTime;
-}
-
-void fps_scuffed_calculate(FpsCounter* fpsCounter) {
-    const float second = 1.0f;
-    const float secondsElapsedFromPrevious = (fpsCounter->currentTime + fpsCounter->overflowedFpsCalcTime) - fpsCounter->previousCurrentTime;
-    if (second < secondsElapsedFromPrevious) {
-        fpsCounter->displayFps = fpsCounter->frames;
-        fpsCounter->frames = 0;
-        fpsCounter->previousCurrentTime = fpsCounter->currentTime;
-        fpsCounter->overflowedFpsCalcTime = secondsElapsedFromPrevious - second;
-    }
 }
 
 // Becnhmark vars
@@ -113,9 +51,9 @@ static float textRenderTime = 0.0f;
 static int currentSecond = 0;
 
 static FreeTypeFont gDebugFTFont = {};
-static ApplicationState appState = {};
+static FpsCounter fpsCounter = {};
 
-int application_run() {
+int game_run() {
     int result;
     result = glfwInit();
     j_assert(result == GLFW_TRUE, "glfwInit() failed");
@@ -123,8 +61,8 @@ int application_run() {
     result = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
     j_assert(result == 1, "Failed to initialize OpenGL context GLAD");
     glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &result);
-    printf("Using OpenGL %d.%d\n", GLVersion.major, GLVersion.minor);
-    printf("Maximum nr of vertex attributes supported: %d\n", result);
+    std::cout << "Using OpenGL " << GLVersion.major << "." << GLVersion.minor << "\n";
+    std::cout << "Maximum nr of vertex attributes supported: " << result << "\n";
     font_freetype_load("fonts/Roboto-Regular.ttf", &gDebugFTFont);
     unsigned int texture1 = texture_create("./images/awesomeface.png", true);
     // indicies of two triangles
@@ -158,7 +96,7 @@ int application_run() {
             double time = glfwGetTime();
             rotateScale = (float)time * 40;
             trans = glm::translate(trans, glm::vec3(0.0f, 0.0f, 0.0f));
-            trans = glm::rotate(trans, glm::radians(rotateScale * -4), glm::vec3(0.0f, 0.0f, 1.0f));
+            trans = glm::rotate(trans, glm::radians(rotateScale), glm::vec3(0.0f, 0.0f, 1.0f));
             trans = glm::scale(trans, glm::vec3(1.0f, 1.0f, 1.0f));
             shader_set_mat4(shader1, "transform", trans);
         }
@@ -171,13 +109,13 @@ int application_run() {
             stream << std::fixed << std::setprecision(3) << rotateScale;
             displayDebug1 = "Rotate scale: " + stream.str();
             stream.str("");
-            stream << std::fixed << std::setprecision(1) << appState.fpsCounter.currentTime;
+            stream << std::fixed << std::setprecision(1) << fpsCounter.currentTime;
             displayCurrent = "Time: " + stream.str() + "s";
             stream.str("");
-            stream << std::fixed << std::setprecision(1) << appState.fpsCounter.displayFps;
+            stream << std::fixed << std::setprecision(1) << fpsCounter.displayFps;
             displayFps = "FPS: " + stream.str();
-            if ((int)appState.fpsCounter.currentTime != currentSecond) {
-                currentSecond = (int)appState.fpsCounter.currentTime;
+            if ((int)fpsCounter.currentTime != currentSecond) {
+                currentSecond = (int)fpsCounter.currentTime;
                 stream.str("");
                 stream << std::fixed << std::setprecision(2) << textRenderTime;
                 displayTextRender = "Text render: " + stream.str() + "ms";
@@ -188,9 +126,9 @@ int application_run() {
         font_freetype_render(&gDebugFTFont, displayCurrent, 1350.0f, 1130.0f, 1.0f, glm::vec3(0.8, 0.8f, 0.8f));
         font_freetype_render(&gDebugFTFont, displayTextRender, 30.0f, 1130.0f, 1.0f, glm::vec3(0.8, 0.8f, 0.8f));
         window_swap_screen_buffer(window);
-        fps_frames_increment(&appState.fpsCounter, 1);
-        fps_deltatime_calculate(&appState.fpsCounter);
-        fps_scuffed_calculate(&appState.fpsCounter);
+        fps_frames_increment(&fpsCounter, 1);
+        fps_deltatime_calculate(&fpsCounter);
+        fps_scuffed_calculate(&fpsCounter);
     }
     return 0;
 }
@@ -199,6 +137,6 @@ int application_run() {
 int main() {
     int code = 0;
     std::setlocale(LC_ALL, "utf-8");
-	code = application_run();
+	code = game_run();
 	return code;
 }

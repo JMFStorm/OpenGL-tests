@@ -160,15 +160,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\freeType.cpp" />
+    <ClCompile Include="src\buffer.cpp" />
+    <ClCompile Include="src\fps_counter.cpp" />
+    <ClCompile Include="src\free_type.cpp" />
     <ClCompile Include="src\glad.c" />
     <ClCompile Include="include\glm\detail\glm.cpp" />
     <ClCompile Include="src\image.cpp" />
-    <ClCompile Include="src\jUtil.cpp" />
+    <ClCompile Include="src\j_util.cpp" />
     <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\readFile.cpp" />
+    <ClCompile Include="src\read_file.cpp" />
     <ClCompile Include="src\shader.cpp" />
-    <ClCompile Include="src\vertexArray.cpp" />
+    <ClCompile Include="src\vertex_array.cpp" />
     <ClCompile Include="src\window.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -559,14 +561,16 @@
     <ClInclude Include="include\glm\vec4.hpp" />
     <ClInclude Include="include\glm\vector_relational.hpp" />
     <ClInclude Include="include\KHR\khrplatform.h" />
-    <ClInclude Include="src\freeType.hpp" />
+    <ClInclude Include="src\buffer.hpp" />
+    <ClInclude Include="src\fps_counter.hpp" />
+    <ClInclude Include="src\free_type.hpp" />
     <ClInclude Include="src\image.hpp" />
-    <ClInclude Include="src\jUtil.hpp" />
+    <ClInclude Include="src\j_util.hpp" />
     <ClInclude Include="src\main.hpp" />
-    <ClInclude Include="src\readFile.hpp" />
+    <ClInclude Include="src\read_file.hpp" />
     <ClInclude Include="src\shader.hpp" />
     <ClInclude Include="src\stb_image.h" />
-    <ClInclude Include="src\vertexArray.hpp" />
+    <ClInclude Include="src\vertex_array.hpp" />
     <ClInclude Include="src\window.hpp" />
   </ItemGroup>
   <ItemGroup>

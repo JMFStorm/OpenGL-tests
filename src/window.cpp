@@ -1,6 +1,7 @@
-#include "window.hpp"
-#include "jUtil.hpp"
+#include <iostream>
 #include "main.hpp"
+#include "j_util.hpp"
+#include "window.hpp"
 
 void window_clear_screen_buffer(const float red, const float green, const float blue, const float alpha) {
     glClearColor(red, green, blue, alpha);
@@ -18,7 +19,7 @@ void window_scroll_callback(GLFWwindow* window, double xoffset, double yoffset) 
 }
 
 void window_error_callback(int errorCode, const char* description) {
-    printf("GLFW error %d: %s\n", errorCode, description);
+    std::cout << "GLFW error: " << errorCode << ", " << description << "\n";
 }
 
 void window_framebuffer_size_callback(GLFWwindow* window, int width, int height) {
@@ -34,8 +35,8 @@ GLFWwindow* window_create(const bool fullscreen) {
     glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
     GLFWwindow* window;
     auto fullscreenOption = fullscreen ? monitor : NULL;
-    auto widthOption = fullscreen ? mode->width : WINDOW_WIDTH_DEFAULT;
-    auto heightOption = fullscreen ? mode->height : WINDOW_HEIGHT_DEFAULT;
+    auto widthOption = fullscreen ? mode->width : windows_width_default;
+    auto heightOption = fullscreen ? mode->height : windows_height_default;
     window = glfwCreateWindow(widthOption, heightOption, "LearnOpenGL!", fullscreenOption, NULL);
     j_assert(window != NULL, "glfwCreateWindow() failed");
     glfwMakeContextCurrent(window);

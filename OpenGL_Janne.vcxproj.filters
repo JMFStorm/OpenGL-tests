@@ -24,25 +24,31 @@
     <ClCompile Include="src\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\freeType.cpp">
+    <ClCompile Include="src\free_type.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\jUtil.cpp">
+    <ClCompile Include="src\j_util.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\shader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\readFile.cpp">
+    <ClCompile Include="src\read_file.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\vertexArray.cpp">
+    <ClCompile Include="src\vertex_array.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\image.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\window.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\buffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\fps_counter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -1211,19 +1217,19 @@
     <ClInclude Include="include\dlg\output.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\freeType.hpp">
+    <ClInclude Include="src\free_type.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\jUtil.hpp">
+    <ClInclude Include="src\j_util.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\shader.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\readFile.hpp">
+    <ClInclude Include="src\read_file.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\vertexArray.hpp">
+    <ClInclude Include="src\vertex_array.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\main.hpp">
@@ -1233,6 +1239,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\window.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\buffer.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\fps_counter.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

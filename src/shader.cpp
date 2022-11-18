@@ -1,6 +1,6 @@
 #include "shader.hpp"
 #include <glad/glad.h>
-#include "readFile.hpp"
+#include "read_file.hpp"
 
 unsigned int shader_create(const std::string& vertexFilePath, const std::string& fragmentFilePath) {
     int success;
