@@ -1,4 +1,4 @@
 #pragma once
 
-unsigned char* LoadImage(const char* filePath, int* width, int* height, int* nrChannels);
-void FreeImageData(unsigned char* data);
+unsigned char* image_load(const char* filePath, int* width, int* height, int* nrChannels);
+void image_free_data(unsigned char* data);

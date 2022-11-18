@@ -61,11 +61,11 @@ unsigned int texture_create(const std::string& filePath, const bool isRGBA) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     int width, height, nrChannels;
-    unsigned char* data = LoadImage(filePath.c_str(), &width, &height, &nrChannels);
+    unsigned char* data = image_load(filePath.c_str(), &width, &height, &nrChannels);
     j_assert(data, "Failed to load texture: " + filePath);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, rbgMode, GL_UNSIGNED_BYTE, data);
     glGenerateMipmap(GL_TEXTURE_2D);
-    FreeImageData(data);
+    image_free_data(data);
     return textureId;
 }
 
@@ -119,7 +119,7 @@ int application_run() {
     int result;
     result = glfwInit();
     j_assert(result == GLFW_TRUE, "glfwInit() failed");
-    GLFWwindow* window = CreateWindow(false);
+    GLFWwindow* window = window_create(false);
     result = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
     j_assert(result == 1, "Failed to initialize OpenGL context GLAD");
     glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &result);
@@ -136,25 +136,23 @@ int application_run() {
          0.5f, -0.5f, 0.0f,  1.0f, 0.0f, // bottom right
         -0.5f, -0.5f, 0.0f,  0.0f, 0.0f  // bottom left
     };
-    unsigned int vertexArrayObject = CreateVertexArray();
-    BindVertexArray(vertexArrayObject);
+    unsigned int vertexArrayObject = vertex_array_create();
+    vertex_array_bind(vertexArrayObject);
     buffer_vertex_create(vertices);
     buffer_index_create(indices);
-    const int vertexAttributeStride = 5 * sizeof(float);
-    const int secondAttribOffset = 3;
-    SetVertexAttributePointer(0, 3, ShaderDataType::Float, false, vertexAttributeStride, (void*)0);
-    SetVertexAttributePointer(1, 2,ShaderDataType::Float, false, vertexAttributeStride, (void*)(secondAttribOffset * sizeof(float)));
-    UnbindVertexArray();
-    unsigned int shader1 = CreateShader("./shaders/default_vertex_shader.shader", "./shaders/default_fragment_shader.shader");
-    UseShader(shader1);
-    SetInt(shader1, "texture1", 0);
-    UseShader(0);
+    vertex_array_set_attribute_pointer(0, 3, ShaderDataType::Float, false, 5 * sizeof(float), (void*)0);
+    vertex_array_set_attribute_pointer(1, 2,ShaderDataType::Float, false, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    vertex_array_unbind();
+    unsigned int shader1 = shader_create("./shaders/default_vertex_shader.shader", "./shaders/default_fragment_shader.shader");
+    shader_use(shader1);
+    shader_set_int(shader1, "texture1", 0);
+    shader_use(0);
     std::string displayTextRender = "";
-    while (!WindowShouldClose(window)) {
-        HandleWindowInputEvents(window);
-        ClearScreenBuffer(0.2f, 0.3f, 0.3f, 1.0f);
+    while (!window_set_should_close(window)) {
+        window_handle_input_events(window);
+        window_clear_screen_buffer(0.2f, 0.3f, 0.3f, 1.0f);
         texture_bind(texture1);
-        UseShader(shader1);
+        shader_use(shader1);
         glm::mat4 trans; float rotateScale; { // Translations
             trans = glm::mat4(1.0f);
             double time = glfwGetTime();
@@ -162,13 +160,13 @@ int application_run() {
             trans = glm::translate(trans, glm::vec3(0.0f, 0.0f, 0.0f));
             trans = glm::rotate(trans, glm::radians(rotateScale * -4), glm::vec3(0.0f, 0.0f, 1.0f));
             trans = glm::scale(trans, glm::vec3(1.0f, 1.0f, 1.0f));
-            SetMat4(shader1, "transform", trans);
+            shader_set_mat4(shader1, "transform", trans);
         }
         glActiveTexture(GL_TEXTURE0);
-        BindVertexArray(vertexArrayObject);
+        vertex_array_bind(vertexArrayObject);
         int elementsCount = (int)indices.size();
         glDrawElements(GL_TRIANGLES, elementsCount, GL_UNSIGNED_INT, 0);
-        UseShader(0);
+        shader_use(0);
         std::stringstream stream; std::string displayDebug1; std::string displayCurrent; std::string displayFps; { // Benchmark fps
             stream << std::fixed << std::setprecision(3) << rotateScale;
             displayDebug1 = "Rotate scale: " + stream.str();
@@ -189,7 +187,7 @@ int application_run() {
         font_freetype_render(&gDebugFTFont, displayFps, 1350.0f, 1160.0f, 1.0f, glm::vec3(0.8, 0.8f, 0.8f));
         font_freetype_render(&gDebugFTFont, displayCurrent, 1350.0f, 1130.0f, 1.0f, glm::vec3(0.8, 0.8f, 0.8f));
         font_freetype_render(&gDebugFTFont, displayTextRender, 30.0f, 1130.0f, 1.0f, glm::vec3(0.8, 0.8f, 0.8f));
-        SwapScreenBuffer(window);
+        window_swap_screen_buffer(window);
         fps_frames_increment(&appState.fpsCounter, 1);
         fps_deltatime_calculate(&appState.fpsCounter);
         fps_scuffed_calculate(&appState.fpsCounter);

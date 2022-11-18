@@ -61,11 +61,11 @@ void font_freetype_load(const char* fontPath, FreeTypeFont* font) {
     glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
-    unsigned int textShader = CreateShader("./shaders/font_vertex_shader.shader", "./shaders/font_fragment_shader.shader");
+    unsigned int textShader = shader_create("./shaders/font_vertex_shader.shader", "./shaders/font_fragment_shader.shader");
     glm::mat4 projection = glm::ortho(0.0f, (float)WINDOW_WIDTH_DEFAULT, 0.0f, (float)WINDOW_HEIGHT_DEFAULT);
-    UseShader(textShader);
-    SetMat4(textShader, "projection", projection);
-    UseShader(0);
+    shader_use(textShader);
+    shader_set_mat4(textShader, "projection", projection);
+    shader_use(0);
     font->shader = textShader;
     font->vao = textVAO;
     font->vbo = textVBO;
@@ -74,10 +74,10 @@ void font_freetype_load(const char* fontPath, FreeTypeFont* font) {
 
 void font_freetype_render(FreeTypeFont* font, std::string text, float screenX, float screenY, float scale, glm::vec3 color) {
     // Activate corresponding render state	
-    UseShader(font->shader);
-    SetVec3(font->shader, "textColor", color.x, color.y, color.z);
+    shader_use(font->shader);
+    shader_set_vec3(font->shader, "textColor", color.x, color.y, color.z);
     glActiveTexture(GL_TEXTURE0);
-    BindVertexArray(font->vao);
+    vertex_array_bind(font->vao);
     // Iterate through all characters
     std::string::const_iterator current;
     FreeTypeCharacter character;
@@ -111,6 +111,6 @@ void font_freetype_render(FreeTypeFont* font, std::string text, float screenX, f
         screenX += (character.advance >> 6) * scale; // bitshift by 6 to get value in pixels (2^6 = 64)
     }
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-    UnbindVertexArray();
+    vertex_array_unbind();
     glBindTexture(GL_TEXTURE_2D, 0);
 }

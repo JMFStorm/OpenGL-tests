@@ -3,7 +3,7 @@
 #include <fstream>
 #include <sstream>
 
-std::string ReadFileToString(std::string filePath) {
+std::string file_read_to_string(std::string filePath) {
     std::stringstream sStream;
     std::ifstream source;
     std::string result;

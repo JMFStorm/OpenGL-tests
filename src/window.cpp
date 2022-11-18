@@ -2,30 +2,30 @@
 #include "jUtil.hpp"
 #include "main.hpp"
 
-void ClearScreenBuffer(const float red, const float green, const float blue, const float alpha) {
+void window_clear_screen_buffer(const float red, const float green, const float blue, const float alpha) {
     glClearColor(red, green, blue, alpha);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void SwapScreenBuffer(GLFWwindow* window) {
+void window_swap_screen_buffer(GLFWwindow* window) {
     glfwSwapBuffers(window);
 }
 
-void MouseCallback(GLFWwindow* window, double xposIn, double yposIn) {
+void window_mouse_callback(GLFWwindow* window, double xposIn, double yposIn) {
 }
 
-void ScrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
+void window_scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
 }
 
-void GlfwErrorCallback(int errorCode, const char* description) {
+void window_error_callback(int errorCode, const char* description) {
     printf("GLFW error %d: %s\n", errorCode, description);
 }
 
-void FramebufferSizeCallback(GLFWwindow* window, int width, int height) {
+void window_framebuffer_size_callback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
 }
 
-GLFWwindow* CreateWindow(const bool fullscreen) {
+GLFWwindow* window_create(const bool fullscreen) {
     GLFWmonitor* monitor = glfwGetPrimaryMonitor();
     const GLFWvidmode* mode = glfwGetVideoMode(monitor);
     glfwWindowHint(GLFW_RED_BITS, mode->redBits);
@@ -42,20 +42,20 @@ GLFWwindow* CreateWindow(const bool fullscreen) {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwSetErrorCallback(GlfwErrorCallback);
-    glfwSetFramebufferSizeCallback(window, FramebufferSizeCallback);
-    glfwSetCursorPosCallback(window, MouseCallback);
-    glfwSetScrollCallback(window, ScrollCallback);
+    glfwSetErrorCallback(window_error_callback);
+    glfwSetFramebufferSizeCallback(window, window_framebuffer_size_callback);
+    glfwSetCursorPosCallback(window, window_mouse_callback);
+    glfwSetScrollCallback(window, window_scroll_callback);
     // tell GLFW to capture our mouse
     // glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     return window;
 }
 
-bool WindowShouldClose(GLFWwindow* window) {
+bool window_set_should_close(GLFWwindow* window) {
     return glfwWindowShouldClose(window);
 }
 
-void HandleWindowInputEvents(GLFWwindow* window) {
+void window_handle_input_events(GLFWwindow* window) {
     glfwPollEvents();
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, true);
