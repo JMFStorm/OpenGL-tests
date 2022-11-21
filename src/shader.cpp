@@ -2,7 +2,8 @@
 #include <glad/glad.h>
 #include "read_file.hpp"
 
-unsigned int shader_create(const std::string& vertexFilePath, const std::string& fragmentFilePath) {
+unsigned int shader_create(const std::string& vertexFilePath, const std::string& fragmentFilePath)
+{
     int success;
     char infoLog[512];
     // Get shader source strings
@@ -46,64 +47,79 @@ unsigned int shader_create(const std::string& vertexFilePath, const std::string&
     return shaderProgram;
 }
 
-void shader_use(unsigned int shaderId) {
+void shader_use(unsigned int shaderId)
+{
     glUseProgram(shaderId);
 }
 
-unsigned int shader_get_uniform(int shaderId, const std::string& name) {
+unsigned int shader_get_uniform(int shaderId, const std::string& name)
+{
     return glGetUniformLocation(shaderId, name.c_str());
 }
 
-void shader_set_bool(int shaderId, const std::string& name, const bool value) {
+void shader_set_bool(int shaderId, const std::string& name, const bool value)
+{
     glUniform1i(glGetUniformLocation(shaderId, name.c_str()), (int)value);
 }
 
-void shader_set_int(int shaderId, const std::string& name, const int value) {
+void shader_set_int(int shaderId, const std::string& name, const int value)
+{
     glUniform1i(glGetUniformLocation(shaderId, name.c_str()), value);
 }
 
-void shader_set_float(int shaderId, const std::string& name, const float value) {
+void shader_set_float(int shaderId, const std::string& name, const float value)
+{
     glUniform1f(glGetUniformLocation(shaderId, name.c_str()), value);
 }
 
-void shader_set_vec2(int shaderId, const std::string& name, const glm::vec2& value) {
+void shader_set_vec2(int shaderId, const std::string& name, const glm::vec2& value)
+{
     glUniform2fv(glGetUniformLocation(shaderId, name.c_str()), 1, &value[0]);
 }
 
-void shader_set_vec2(int shaderId, const std::string& name, const float x, const float y) {
+void shader_set_vec2(int shaderId, const std::string& name, const float x, const float y)
+{
     glUniform2f(glGetUniformLocation(shaderId, name.c_str()), x, y);
 }
 
-void shader_set_vec3(int shaderId, const std::string& name, const glm::vec3& value) {
+void shader_set_vec3(int shaderId, const std::string& name, const glm::vec3& value)
+{
     glUniform3fv(glGetUniformLocation(shaderId, name.c_str()), 1, &value[0]);
 }
 
-void shader_set_vec3(int shaderId, const std::string& name, float x, float y, float z) {
+void shader_set_vec3(int shaderId, const std::string& name, float x, float y, float z)
+{
     glUniform3f(glGetUniformLocation(shaderId, name.c_str()), x, y, z);
 }
 
-void shader_set_vec4(int shaderId, const std::string& name, const glm::vec4& value) {
+void shader_set_vec4(int shaderId, const std::string& name, const glm::vec4& value)
+{
     glUniform4fv(glGetUniformLocation(shaderId, name.c_str()), 1, &value[0]);
 }
 
-void shader_set_vec4(int shaderId, const std::string& name, float x, float y, float z, float w) {
+void shader_set_vec4(int shaderId, const std::string& name, float x, float y, float z, float w)
+{
     glUniform4f(glGetUniformLocation(shaderId, name.c_str()), x, y, z, w);
 }
 
-void shader_set_mat2(int shaderId, const std::string& name, const glm::mat2& mat) {
+void shader_set_mat2(int shaderId, const std::string& name, const glm::mat2& mat)
+{
     glUniformMatrix2fv(glGetUniformLocation(shaderId, name.c_str()), 1, GL_FALSE, &mat[0][0]);
 }
 
-void shader_set_mat3(int shaderId, const std::string& name, const glm::mat3& mat) {
+void shader_set_mat3(int shaderId, const std::string& name, const glm::mat3& mat)
+{
     glUniformMatrix3fv(glGetUniformLocation(shaderId, name.c_str()), 1, GL_FALSE, &mat[0][0]);
 }
 
-void shader_set_mat4(int shaderId, const std::string& name, const glm::mat4& mat) {
+void shader_set_mat4(int shaderId, const std::string& name, const glm::mat4& mat)
+{
     glUniformMatrix4fv(glGetUniformLocation(shaderId, name.c_str()), 1, GL_FALSE, &mat[0][0]);
 }
 
 
-GLenum shader_type_to_opengl_type(ShaderDataType type) {
+GLenum shader_type_to_opengl_type(ShaderDataType type)
+{
     switch (type) {
         case ShaderDataType::Float:    return GL_FLOAT;
         case ShaderDataType::Float2:   return GL_FLOAT;

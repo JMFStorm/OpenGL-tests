@@ -8,7 +8,7 @@
 Camera camera_init()
 {
     Camera camera = {};
-    camera.Zoom = 45.0f;
+    camera.Zoom = 75.0f;
     camera.MouseSensitivity = 0.1f;
     camera.MovementSpeed = 4.5f;
     camera.Yaw = -90.0f;

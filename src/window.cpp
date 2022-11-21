@@ -3,27 +3,33 @@
 #include "j_util.hpp"
 #include "window.hpp"
 
-void window_clear_screen_buffer(const float red, const float green, const float blue, const float alpha) {
+void window_clear_screen_buffer(const float red, const float green, const float blue, const float alpha)
+{
     glClearColor(red, green, blue, alpha);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void window_swap_screen_buffer(GLFWwindow* window) {
+void window_swap_screen_buffer(GLFWwindow* window)
+{
     glfwSwapBuffers(window);
 }
 
-void window_scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
+void window_scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
 }
 
-void window_error_callback(int errorCode, const char* description) {
+void window_error_callback(int errorCode, const char* description)
+{
     std::cout << "GLFW error: " << errorCode << ", " << description << "\n";
 }
 
-void window_framebuffer_size_callback(GLFWwindow* window, int width, int height) {
+void window_framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
     glViewport(0, 0, width, height);
 }
 
-GLFWwindow* window_create(const bool fullscreen) {
+GLFWwindow* window_create(const bool fullscreen)
+{
     GLFWwindow* window;
     GLFWmonitor* monitor = glfwGetPrimaryMonitor();
     auto fullscreenOption = fullscreen ? monitor : NULL;
@@ -47,6 +53,7 @@ GLFWwindow* window_create(const bool fullscreen) {
     return window;
 }
 
-bool window_set_should_close(GLFWwindow* window) {
+bool window_set_should_close(GLFWwindow* window)
+{
     return glfwWindowShouldClose(window);
 }

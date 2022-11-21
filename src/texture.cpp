@@ -3,7 +3,8 @@
 #include "texture.hpp"
 #include "j_util.hpp"
 
-unsigned int texture_create(const std::string& file_path, const bool is_rgba) {
+unsigned int texture_create(const std::string& file_path, const bool is_rgba)
+{
     j_assert(file_path.empty() == false, "FilePath missing, cannot init texture");
     unsigned int texture_id;
     int rgb_mode = is_rgba ? GL_RGBA : GL_RGB;
@@ -22,11 +23,13 @@ unsigned int texture_create(const std::string& file_path, const bool is_rgba) {
     return texture_id;
 }
 
-void texture_bind(unsigned int textureId) {
+void texture_bind(unsigned int textureId)
+{
     j_assert(textureId != 0, "Id missing, cannot bind texture");
     glBindTexture(GL_TEXTURE_2D, textureId);
 }
 
-void texture_unbind() {
+void texture_unbind()
+{
     glBindTexture(GL_TEXTURE_2D, 0);
 }
