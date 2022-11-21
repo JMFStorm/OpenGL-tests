@@ -54,6 +54,9 @@
     <ClCompile Include="src\texture.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\camera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\stb_image.h">
@@ -1251,6 +1254,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\texture.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\camera.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

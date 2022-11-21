@@ -161,6 +161,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\buffer.cpp" />
+    <ClCompile Include="src\camera.cpp" />
     <ClCompile Include="src\fps_counter.cpp" />
     <ClCompile Include="src\free_type.cpp" />
     <ClCompile Include="src\glad.c" />
@@ -563,6 +564,7 @@
     <ClInclude Include="include\glm\vector_relational.hpp" />
     <ClInclude Include="include\KHR\khrplatform.h" />
     <ClInclude Include="src\buffer.hpp" />
+    <ClInclude Include="src\camera.hpp" />
     <ClInclude Include="src\fps_counter.hpp" />
     <ClInclude Include="src\free_type.hpp" />
     <ClInclude Include="src\image.hpp" />

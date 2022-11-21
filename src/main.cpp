@@ -13,6 +13,7 @@
 #include <vector>
 #pragma warning(pop)
 #include "main.hpp"
+#include "camera.hpp"
 #include "buffer.hpp"
 #include "free_type.hpp"
 #include "fps_counter.hpp"
@@ -23,21 +24,19 @@
 #include "vertex_array.hpp"
 #include "window.hpp"
 
+static Camera camera_main = camera_init();
 static FrameData fps_counter = {};
-glm::vec3 camera_position = glm::vec3(0.0f, 0.0f, 3.0f);
-glm::vec3 camera_front = glm::vec3(0.0f, 0.0f, -1.0f);
-glm::vec3 camera_up = glm::vec3(0.0f, 1.0f, 0.0f);
 bool first_mouse = true;
-float yaw = -90.0f;	
-float pitch = 0.0f;
-float lastX = 800.0f / 2.0;
-float lastY = 600.0 / 2.0;
-float fov = 45.0f;
+float lastX = window_width_default / 2.0f;
+float lastY = window_height_default / 2.0f;
 
-void window_mouse_callback(GLFWwindow* window, double xposIn, double yposIn) {
+void window_mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
+{
     float xpos = static_cast<float>(xposIn);
     float ypos = static_cast<float>(yposIn);
-    if (first_mouse) {
+
+    if (first_mouse)
+    {
         lastX = xpos;
         lastY = ypos;
         first_mouse = false;
@@ -46,48 +45,38 @@ void window_mouse_callback(GLFWwindow* window, double xposIn, double yposIn) {
     float yoffset = lastY - ypos;
     lastX = xpos;
     lastY = ypos;
-    float sensitivity = 0.1f;
-    xoffset *= sensitivity;
-    yoffset *= sensitivity;
-    yaw += xoffset;
-    pitch += yoffset;
-    if (pitch > 89.0f) {
-        pitch = 89.0f;
-    }
-    if (pitch < -89.0f) {
-        pitch = -89.0f;
-    }
-    float radians_yaw = glm::radians(yaw);
-    float radians_pitch = glm::radians(pitch);
-    float cos_yaw = cos(radians_yaw);
-    float cos_pitch = cos(radians_pitch);
-    float sin_yaw = sin(radians_yaw);
-    float sin_pitch = sin(radians_pitch);
-    glm::vec3 front = glm::vec3(cos_yaw * cos_pitch, sin_pitch, sin_yaw * cos_pitch);
-    camera_front = glm::normalize(front);
+
+    camera_look(&camera_main, xoffset, yoffset);
 }
 
-void window_handle_input_events(GLFWwindow* window) {
+void window_handle_input_events(GLFWwindow* window)
+{
     glfwPollEvents();
+
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, true);
     }
-    float cameraSpeed = static_cast<float>(2.5 * fps_counter.deltaTime);
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-        camera_position += cameraSpeed * camera_front;
+        camera_move(&camera_main, Move_direction::FORWARD, fps_counter.deltaTime);
     }
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-        camera_position -= cameraSpeed * camera_front;
+        camera_move(&camera_main, Move_direction::BACKWARD, fps_counter.deltaTime);
     }
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-        camera_position -= glm::normalize(glm::cross(camera_front, camera_up)) * cameraSpeed;
+        camera_move(&camera_main, Move_direction::LEFT, fps_counter.deltaTime);
     }
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-        camera_position += glm::normalize(glm::cross(camera_front, camera_up)) * cameraSpeed;
+        camera_move(&camera_main, Move_direction::RIGHT, fps_counter.deltaTime);
     }
 }
 
-int game_run() {
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+    camera_zoom(&camera_main, yoffset);
+}
+
+int game_run()
+{
     GLFWwindow* window;
     {
         int result;
@@ -95,14 +84,17 @@ int game_run() {
         j_assert(result == GLFW_TRUE, "glfwInit() failed");
         window = window_create(false);
         result = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
-        glfwSetCursorPosCallback(window, window_mouse_callback);
-        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         j_assert(result == 1, "Failed to initialize OpenGL context GLAD");
+
+        glfwSetCursorPosCallback(window, window_mouse_callback);
+        glfwSetScrollCallback(window, scroll_callback);
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+        std::cout << "Using OpenGL " << GLVersion.major << "." << GLVersion.minor << "\n";
         glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &result);
+        std::cout << "Maximum nr of vertex attributes supported: " << result << "\n";
         glEnable(GL_BLEND);
         glEnable(GL_DEPTH_TEST);
-        std::cout << "Using OpenGL " << GLVersion.major << "." << GLVersion.minor << "\n";
-        std::cout << "Maximum nr of vertex attributes supported: " << result << "\n";
     }
     FreeTypeFont font_debug = {};
     font_freetype_load("fonts/Roboto-Regular.ttf", &font_debug);
@@ -137,24 +129,27 @@ int game_run() {
         shader_set_int(shader_default, "texture1", 0);
         shader_use(0);
     }
+
     while (!window_set_should_close(window)) {
+        float time_elapsed = glfwGetTime();
         float rotation_scale;
+
         window_handle_input_events(window);
         window_clear_screen_buffer(0.3f, 0.4f, 0.42f, 1.0f);
         {
+            glm::mat4 model; glm::mat4 projection; glm::mat4 view; glm::mat4 camera_view;
             shader_use(shader_default);
-            glm::mat4 model; glm::mat4 projection; glm::mat4 view;
             model = glm::mat4(1.0f);
-            double time = glfwGetTime();
-            rotation_scale = (float)time * 40;
+            rotation_scale = time_elapsed * 40;
             model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
             model = glm::rotate(model, glm::radians(rotation_scale), glm::vec3(0.0f, 0.0f, 1.0f));
             model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
+
+            camera_view = camera_get_view_matrix(camera_main);
+            projection = glm::perspective(glm::radians(camera_main.Zoom), (float)window_width_default / (float)window_height_default, 0.1f, 100.0f);
             shader_set_mat4(shader_default, "model", model);
-            projection = glm::perspective(glm::radians(fov), (float)4 / (float)3, 0.1f, 100.0f);
-            view = glm::lookAt(camera_position, camera_position + camera_front, camera_up);
             shader_set_mat4(shader_default, "projection", projection);
-            shader_set_mat4(shader_default, "view", view);
+            shader_set_mat4(shader_default, "view", camera_view);
             texture_bind(texture_smile);
             glActiveTexture(GL_TEXTURE0);
             vertex_array_bind(vertex_array);
@@ -162,30 +157,42 @@ int game_run() {
             shader_use(0);
         }
         {
-            std::string text_rotation_scale; std::string text_time_elapsed; std::string text_fps;
+            std::string text_deltatime; std::string text_time_elapsed; std::string text_fps;
+            std::string text_camera_pos; std::string text_camera_front;
             std::stringstream stream;
-            stream << std::fixed << std::setprecision(3) << rotation_scale;
-            text_rotation_scale = "Rotate scale: " + stream.str();
+            stream << std::fixed << std::setprecision(2) << fps_counter.deltaTime * 1000 << "ms";
+            text_deltatime = "Deltatime: " + stream.str();
             stream.str("");
             stream << std::fixed << std::setprecision(1) << fps_counter.currentTime;
             text_time_elapsed = "Time: " + stream.str() + "s";
             stream.str("");
             stream << std::fixed << std::setprecision(1) << fps_counter.displayFps;
             text_fps = "FPS: " + stream.str();
-            font_freetype_render(&font_debug, text_rotation_scale, 30.0f, 860.0f, 1.0f, glm::vec3(0.8, 0.8f, 0.8f));
-            font_freetype_render(&font_debug, text_fps, 900.0f, 860.0f, 1.0f, glm::vec3(0.8, 0.8f, 0.8f));
-            font_freetype_render(&font_debug, text_time_elapsed, 900.0f, 830.0f, 1.0f, glm::vec3(0.8, 0.8f, 0.8f));
+            stream.str("");
+            stream << std::fixed << std::setprecision(1) << camera_main.Position.x << ", " << camera_main.Position.y << ", " << camera_main.Position.z;
+            text_camera_pos = "Camera position: " + stream.str();
+            stream.str("");
+            stream << std::fixed << std::setprecision(1) << camera_main.Front.x << ", " << camera_main.Front.y << ", " << camera_main.Front.z;
+            text_camera_front = "Camera direction: " + stream.str();
+
+            auto text_debug_color = glm::vec3(0.8, 0.8f, 0.8f);
+            font_freetype_render(&font_debug, text_deltatime, 10.0f, 10.0f, 1.0f, text_debug_color);
+            font_freetype_render(&font_debug, text_fps, 10.0f, 30.0f, 1.0f, text_debug_color);
+            font_freetype_render(&font_debug, text_time_elapsed, 10.0f, 50.0f, 1.0f, text_debug_color);
+            font_freetype_render(&font_debug, text_camera_pos, 10.0f, 90.0f, 1.0f, text_debug_color);
+            font_freetype_render(&font_debug, text_camera_front, 10.0f, 110.0f, 1.0f, text_debug_color);
         }
         window_swap_screen_buffer(window);
         fps_frames_increment(&fps_counter, 1);
-        fps_deltatime_calculate(&fps_counter);
+        fps_deltatime_calculate(&fps_counter, time_elapsed);
         fps_scuffed_calculate(&fps_counter);
     }
     return 0;
 }
 
 
-int main() {
+int main()
+{
     std::setlocale(LC_ALL, "utf-8");
 	return game_run();
 }

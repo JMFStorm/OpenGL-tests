@@ -9,5 +9,5 @@ struct FrameData {
 };
 
 void fps_frames_increment(FrameData* fpsCounter, const unsigned int frames);
-void fps_deltatime_calculate(FrameData* fpsCounter);
+void fps_deltatime_calculate(FrameData* fpsCounter, float time_elapsed);
 void fps_scuffed_calculate(FrameData* fpsCounter);

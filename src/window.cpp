@@ -24,16 +24,17 @@ void window_framebuffer_size_callback(GLFWwindow* window, int width, int height)
 }
 
 GLFWwindow* window_create(const bool fullscreen) {
+    GLFWwindow* window;
     GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+    auto fullscreenOption = fullscreen ? monitor : NULL;
     const GLFWvidmode* mode = glfwGetVideoMode(monitor);
     glfwWindowHint(GLFW_RED_BITS, mode->redBits);
+    auto widthOption = fullscreen ? mode->width : window_width_default;
+    auto heightOption = fullscreen ? mode->height : window_height_default;
+
     glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
     glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
     glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
-    GLFWwindow* window;
-    auto fullscreenOption = fullscreen ? monitor : NULL;
-    auto widthOption = fullscreen ? mode->width : windows_width_default;
-    auto heightOption = fullscreen ? mode->height : windows_height_default;
     window = glfwCreateWindow(widthOption, heightOption, "LearnOpenGL!", fullscreenOption, NULL);
     j_assert(window != NULL, "glfwCreateWindow() failed");
     glfwMakeContextCurrent(window);
