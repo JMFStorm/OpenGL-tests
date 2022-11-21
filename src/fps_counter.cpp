@@ -1,10 +1,5 @@
 #include "fps_counter.hpp"
 
-void fps_frames_increment(FrameData* fpsCounter, const unsigned int frames)
-{
-    fpsCounter->frames += frames;
-}
-
 void fps_deltatime_calculate(FrameData* fpsCounter, float time_elapsed)
 {
     fpsCounter->currentTime = time_elapsed;

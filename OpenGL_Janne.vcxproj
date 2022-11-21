@@ -713,6 +713,8 @@
     <None Include="include\glm\gtx\wrap.inl" />
     <None Include="shaders\default_fragment_shader.shader" />
     <None Include="shaders\default_vertex_shader.shader" />
+    <None Include="shaders\light_source_fragment_shader.shader" />
+    <None Include="shaders\light_source_vertex_shader.shader" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="lib\freetype.lib" />

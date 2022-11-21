@@ -1652,6 +1652,8 @@
     <None Include=".gitignore" />
     <None Include="freetype.dll" />
     <None Include="lib\glfw3.pdb" />
+    <None Include="shaders\light_source_vertex_shader.shader" />
+    <None Include="shaders\light_source_fragment_shader.shader" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="lib\glfw3.lib" />
