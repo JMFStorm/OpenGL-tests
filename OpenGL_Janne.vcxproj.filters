@@ -36,22 +36,10 @@
     <ClCompile Include="src\read_file.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\vertex_array.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\image.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\window.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\buffer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\fps_counter.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\texture.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\camera.cpp">
@@ -1235,25 +1223,13 @@
     <ClInclude Include="src\read_file.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\vertex_array.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\main.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\image.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\window.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\buffer.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\fps_counter.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\texture.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\camera.hpp">

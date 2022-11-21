@@ -5,10 +5,13 @@
 #include "camera.hpp"
 #include <iostream>
 
+const float camera_max_fov = 75.0f;
+const float camera_min_zoom = 15.0f;
+
 Camera camera_init()
 {
     Camera camera = {};
-    camera.Zoom = 75.0f;
+    camera.Zoom = camera_max_fov;
     camera.MouseSensitivity = 0.1f;
     camera.MovementSpeed = 4.5f;
     camera.Yaw = -90.0f;
@@ -52,12 +55,10 @@ void camera_look(Camera* camera, float xoffset, float yoffset)
     camera->Yaw += xoffset;
     camera->Pitch += yoffset;
 
-    if (camera->Pitch > 89.0f)
-    {
+    if (camera->Pitch > 89.0f) {
         camera->Pitch = 89.0f;
     }
-    if (camera->Pitch < -89.0f)
-    {
+    if (camera->Pitch < -89.0f) {
         camera->Pitch = -89.0f;
     }
     glm::vec3 front;
@@ -72,13 +73,12 @@ void camera_look(Camera* camera, float xoffset, float yoffset)
 
 void camera_zoom(Camera* camera, float yoffset)
 {
-    camera->Zoom -= (float)yoffset;
-    if (camera->Zoom < 1.0f)
-    {
-        camera->Zoom = 1.0f;
+    camera->Zoom -= (float)yoffset * 4;
+
+    if (camera->Zoom < camera_min_zoom) {
+        camera->Zoom = camera_min_zoom;
     }
-    if (camera->Zoom > 45.0f)
-    {
-        camera->Zoom = 45.0f;
+    if (camera->Zoom > camera_max_fov) {
+        camera->Zoom = camera_max_fov;
     }
 }

@@ -7,7 +7,6 @@
 #include "j_util.hpp"
 #include "shader.hpp"
 #include "window.hpp"
-#include "vertex_array.hpp"
 
 void font_freetype_load(const char* fontPath, FreeTypeFont* font)
 {
@@ -78,7 +77,7 @@ void font_freetype_render(FreeTypeFont* font, std::string text, float screenX, f
     shader_use(font->shader);
     shader_set_vec3(font->shader, "textColor", color.x, color.y, color.z);
     glActiveTexture(GL_TEXTURE0);
-    vertex_array_bind(font->vao);
+    glBindVertexArray(font->vao);
 
     std::string::const_iterator current;
     FreeTypeCharacter character;
@@ -110,6 +109,6 @@ void font_freetype_render(FreeTypeFont* font, std::string text, float screenX, f
         screenX += (character.advance >> 6) * scale; // bitshift by 6 to get value in pixels (2^6 = 64)
     }
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-    vertex_array_unbind();
+    glBindVertexArray(0);
     glBindTexture(GL_TEXTURE_2D, 0);
 }
