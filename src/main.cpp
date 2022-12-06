@@ -60,15 +60,15 @@ unsigned int loadTexture(char const* path) {
 static Camera camera_main = camera_init();
 static FrameData fps_counter = {};
 bool first_mouse = true;
+bool spotlight_is_on = false;
+bool f_key_press = false;
 float lastX = window_width_default / 2.0f;
 float lastY = window_height_default / 2.0f;
 
 void window_mouse_callback(GLFWwindow* window, double xposIn, double yposIn) {
     float xpos = static_cast<float>(xposIn);
     float ypos = static_cast<float>(yposIn);
-
-    if (first_mouse)
-    {
+    if (first_mouse) {
         lastX = xpos;
         lastY = ypos;
         first_mouse = false;
@@ -81,8 +81,20 @@ void window_mouse_callback(GLFWwindow* window, double xposIn, double yposIn) {
     camera_look(&camera_main, xoffset, yoffset);
 }
 
+
 void window_handle_input_events(GLFWwindow* window) {
     glfwPollEvents();
+
+    if (f_key_press == false && (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)) {
+        f_key_press = true;
+        spotlight_is_on = spotlight_is_on ? false : true;
+        std::cout << "press\n";
+    }
+
+    if (f_key_press == true && (glfwGetKey(window, GLFW_KEY_F) == GLFW_RELEASE)) {
+        f_key_press = false;
+        std::cout << "release\n";
+    }
 
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, true);
@@ -220,6 +232,15 @@ int game_run() {
     shader_set_float(shader_default, "pointLight.constant", 1.0f);
     shader_set_float(shader_default, "pointLight.linear", 0.35f);
     shader_set_float(shader_default, "pointLight.quadratic", 0.44f);
+
+    shader_set_vec3(shader_default, "spotLight.ambient", 0.0f, 0.0f, 0.0f);
+    shader_set_vec3(shader_default, "spotLight.diffuse", 1.0f, 1.0f, 1.0f);
+    shader_set_vec3(shader_default, "spotLight.specular", 1.0f, 1.0f, 1.0f);
+    shader_set_float(shader_default, "spotLight.constant", 1.0f);
+    shader_set_float(shader_default, "spotLight.linear", 0.09f);
+    shader_set_float(shader_default, "spotLight.quadratic", 0.032f);
+    shader_set_float(shader_default, "spotLight.cutOff", glm::cos(glm::radians(12.5f)));
+    shader_set_float(shader_default, "spotLight.outerCutOff", glm::cos(glm::radians(15.0f)));
     shader_use(0);
 
     while (!window_set_should_close(window)) {
@@ -227,18 +248,18 @@ int game_run() {
         float rotation_scale = 0.0f;
 
         window_handle_input_events(window);
-        window_clear_screen_buffer(0.3f, 0.4f, 0.42f, 1.0f);
-
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texture_container);
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, texture_container_specular_map);
-        glBindVertexArray(vertex_array_box);
+        window_clear_screen_buffer(0.2f, 0.3f, 0.31f, 1.0f);
 
         // Game logic
         light_source_position.z = sin(time_elapsed) - 2;
 
-        // Draw create
+        // spotLight
+        shader_use(shader_default);
+        shader_set_bool(shader_default, "spotLight.is_on", spotlight_is_on);
+        shader_set_vec3(shader_default, "spotLight.position", camera_main.Position);
+        shader_set_vec3(shader_default, "spotLight.direction", camera_main.Front);
+
+        // Draw crate
         int elements = 36;
         shader_use(shader_default);
         shader_set_vec3(shader_default, "pointLight.position", light_source_position); // Move point light
@@ -249,6 +270,11 @@ int game_run() {
         shader_set_mat4(shader_default, "model", model);
         shader_set_mat4(shader_default, "projection", projection);
         shader_set_mat4(shader_default, "view", camera_view);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture_container);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, texture_container_specular_map);
+        glBindVertexArray(vertex_array_box);
         glDrawArrays(GL_TRIANGLES, 0, elements);
         glBindTexture(GL_TEXTURE_2D, 0);
         shader_use(0);
@@ -264,33 +290,33 @@ int game_run() {
         shader_set_mat4(shader_light_source, "view", camera_view);
         glDrawArrays(GL_TRIANGLES, 0, elements);
         shader_use(0);
-        {
-            std::string text_deltatime, text_time_elapsed, text_fps, text_camera_pos, text_camera_front;
-            std::stringstream stream;
-            stream << std::fixed << std::setprecision(2) << fps_counter.deltaTime * 1000 << "ms";
-            text_deltatime = "Deltatime: " + stream.str();
-            stream.str("");
-            stream << std::fixed << std::setprecision(1) << fps_counter.currentTime;
-            text_time_elapsed = "Time: " + stream.str() + "s";
-            stream.str("");
-            stream << std::fixed << std::setprecision(1) << fps_counter.displayFps;
-            text_fps = "FPS: " + stream.str();
-            stream.str("");
-            stream << std::fixed << std::setprecision(1) << camera_main.Position.x << "x " << camera_main.Position.y << "y " << camera_main.Position.z << "z";
-            text_camera_pos = "Camera position: " + stream.str();
-            stream.str("");
-            stream << std::fixed << std::setprecision(1) << camera_main.Front.x << "x " << camera_main.Front.y << "y " << camera_main.Front.z << "z";
-            text_camera_front = "Camera direction: " + stream.str();
+        
+        // Debug text
+        std::string text_deltatime, text_time_elapsed, text_fps, text_camera_pos, text_camera_front;
+        std::stringstream stream;
+        stream << std::fixed << std::setprecision(2) << fps_counter.deltaTime * 1000 << "ms";
+        text_deltatime = "Deltatime: " + stream.str();
+        stream.str("");
+        stream << std::fixed << std::setprecision(1) << fps_counter.currentTime;
+        text_time_elapsed = "Time: " + stream.str() + "s";
+        stream.str("");
+        stream << std::fixed << std::setprecision(1) << fps_counter.displayFps;
+        text_fps = "FPS: " + stream.str();
+        stream.str("");
+        stream << std::fixed << std::setprecision(1) << camera_main.Position.x << "x " << camera_main.Position.y << "y " << camera_main.Position.z << "z";
+        text_camera_pos = "Camera position: " + stream.str();
+        stream.str("");
+        stream << std::fixed << std::setprecision(1) << camera_main.Front.x << "x " << camera_main.Front.y << "y " << camera_main.Front.z << "z";
+        text_camera_front = "Camera direction: " + stream.str();
+        auto text_debug_color = glm::vec3(0.8, 0.8f, 0.8f);
+        font_freetype_render(&font_debug, text_deltatime, 10.0f, 10.0f, 1.0f, text_debug_color);
+        font_freetype_render(&font_debug, text_fps, 10.0f, 30.0f, 1.0f, text_debug_color);
+        font_freetype_render(&font_debug, text_time_elapsed, 10.0f, 50.0f, 1.0f, text_debug_color);
+        font_freetype_render(&font_debug, text_camera_pos, 10.0f, 90.0f, 1.0f, text_debug_color);
+        font_freetype_render(&font_debug, text_camera_front, 10.0f, 110.0f, 1.0f, text_debug_color);
 
-            auto text_debug_color = glm::vec3(0.8, 0.8f, 0.8f);
-            font_freetype_render(&font_debug, text_deltatime, 10.0f, 10.0f, 1.0f, text_debug_color);
-            font_freetype_render(&font_debug, text_fps, 10.0f, 30.0f, 1.0f, text_debug_color);
-            font_freetype_render(&font_debug, text_time_elapsed, 10.0f, 50.0f, 1.0f, text_debug_color);
-            font_freetype_render(&font_debug, text_camera_pos, 10.0f, 90.0f, 1.0f, text_debug_color);
-            font_freetype_render(&font_debug, text_camera_front, 10.0f, 110.0f, 1.0f, text_debug_color);
-        }
         window_swap_screen_buffer(window);
-        fps_counter.frames += 1;
+        fps_counter.frames++;
         fps_deltatime_calculate(&fps_counter, time_elapsed);
         fps_scuffed_calculate(&fps_counter);
     }
